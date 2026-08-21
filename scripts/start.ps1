@@ -2,7 +2,9 @@ $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 
 docker build -t pm-app .
-docker rm -f pm-app 2>$null | Out-Null
+if (docker ps -a -q --filter "name=^pm-app$") {
+    docker rm -f pm-app | Out-Null
+}
 New-Item -ItemType Directory -Force -Path data | Out-Null
 
 $envFileArgs = @()
