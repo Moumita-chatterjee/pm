@@ -12,6 +12,9 @@ def call_openrouter(
     payload: dict = {"model": MODEL, "messages": messages}
     if response_format is not None:
         payload["response_format"] = response_format
+        # Reject providers that don't guarantee schema compliance, rather
+        # than silently falling back to one that ignores response_format.
+        payload["provider"] = {"require_parameters": True}
 
     response = httpx.post(
         OPENROUTER_URL,

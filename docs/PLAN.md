@@ -4,11 +4,8 @@ Source requirements: root `AGENTS.md`. This document breaks the 10-part
 outline into checklists with substeps, tests, and success criteria. Checked
 items are done; see each part's "Status" line for where the project stands.
 
-**Current pass scope**: Parts 1-4, done and verified (`docker build` +
-`docker run` + backend pytest + frontend unit/lint + docker-config Playwright
-e2e all pass). Part 5 requires explicit user sign-off on the DB schema before
-Part 6 starts. Part 8 is blocked until a real `OPENROUTER_API_KEY` is added
-to a root `.env` (not committed).
+**Current pass scope**: Parts 1-9 done and verified. Part 10 (AI chat sidebar
+UI) is not started.
 
 ## Cross-cutting technical decisions
 
@@ -231,21 +228,38 @@ answer to a trivial arithmetic question.
 
 ## Part 9: Structured Outputs + board context
 
-**Status**: not started.
+**Status**: done and verified — backend pytest (28 passed) and ruff pass,
+plus a live smoke test against the real OpenRouter API (create/move/edit via
+chat, each persisted and confirmed with a follow-up `GET /api/board`).
 
-- [ ] `backend/app/ai/schema.py`: Pydantic `CreateCardOp` / `EditCardOp` /
+- [x] `backend/app/ai/schema.py`: Pydantic `CreateCardOp` / `EditCardOp` /
       `MoveCardOp` (discriminated union) + `ChatAIResponse {reply,
       operations}`. Hand-written strict JSON schema for the outbound request
       (Pydantic's auto-generated schema doesn't satisfy strict-mode
       constraints out of the box); `ChatAIResponse.model_validate_json(...)`
       validates the actual response afterward regardless.
-- [ ] `backend/app/ai/apply.py`: `apply_operations(board, ops)` — validates
+- [x] `backend/app/ai/apply.py`: `apply_operations(board, ops)` — validates
       every op against the current board first; all-or-nothing (if any op is
       invalid, none apply, but the chat reply is still returned).
-- [ ] `backend/app/routers/chat.py`: `POST /api/chat` — loads the current
+- [x] `backend/app/routers/chat.py`: `POST /api/chat` — loads the current
       board server-side (not client-trusted), sends board JSON + history +
       message to OpenRouter with the strict schema, applies valid operations,
       persists via the Part 6 `save_board`, returns `{reply, board}`.
+- [x] **Found and fixed during live verification**: `build_chat_response_format`
+      (originally a static `CHAT_RESPONSE_FORMAT` constant) now takes the
+      current board's column ids and card ids and puts them in the outbound
+      JSON schema as an `enum` per operation field, built fresh per request.
+      Live testing against real OpenRouter (`openai/gpt-oss-120b`) showed the
+      model would sometimes emit a plausible but wrong id (e.g.
+      `"backlog"` instead of `"col-backlog"`) with a free-form string schema;
+      `apply_operations` correctly rejected it as a no-op, but the model's
+      own `reply` text still claimed success, so the user saw a false
+      "done!" with no actual board change. Column ids are a fixed set of 5
+      (`FIXED_COLUMNS` in `db.py`) so they're always enumerable; card ids
+      come from the board loaded for that request. `edit_card`/`move_card`
+      branches are omitted from the schema entirely when the board has no
+      cards yet (an empty enum would make them unsatisfiable). Confirmed
+      fixed by re-running the same live prompt that reproduced the bug.
 
 **Tests**:
 - `test_apply_operations.py`: per-op-type unit tests (create/edit/move);
@@ -255,6 +269,7 @@ answer to a trivial arithmetic question.
 
 **Success criteria**: chatting "add a card called X to Discovery" results in
 a real new card in the persisted board, returned in the same response.
+Verified live, not just via mocked tests.
 
 ## Part 10: AI chat sidebar UI
 

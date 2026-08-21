@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import STATIC_DIR
 from app.db import init_db
-from app.routers import auth, board, health
+from app.routers import auth, board, chat, health
 
 app = FastAPI()
 
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(board.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
 
 # Registered last: a catch-all for the built frontend. Anything under /api/*
 # above is matched first, so this never shadows an API route.
