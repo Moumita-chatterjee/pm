@@ -1,0 +1,54 @@
+{
+  "users": {
+    "status": "implemented (Part 4)",
+    "columns": {
+      "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+      "username": "TEXT NOT NULL UNIQUE",
+      "password_hash": "BLOB NOT NULL",
+      "created_at": "TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP"
+    },
+    "notes": "One hardcoded row seeded idempotently ('user' / bcrypt('password')). Schema supports more rows for future multi-user; MVP only ever reads/writes this one."
+  },
+  "sessions": {
+    "status": "implemented (Part 4)",
+    "columns": {
+      "token": "TEXT PRIMARY KEY",
+      "user_id": "INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE",
+      "created_at": "TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP",
+      "expires_at": "TEXT NOT NULL"
+    },
+    "notes": "Opaque token (secrets.token_urlsafe) in an HttpOnly cookie. 7-day TTL checked in app.auth.get_current_user."
+  },
+  "boards": {
+    "status": "proposed (Part 5, for Part 6)",
+    "columns": {
+      "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+      "user_id": "INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE",
+      "created_at": "TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP"
+    },
+    "notes": "UNIQUE on user_id enforces the MVP's 1-board-per-user rule at the DB level. Created lazily on first GET /api/board for a user."
+  },
+  "columns_table": {
+    "sql_name": "columns",
+    "status": "proposed (Part 5, for Part 6)",
+    "columns": {
+      "id": "TEXT PRIMARY KEY",
+      "board_id": "INTEGER NOT NULL REFERENCES boards(id) ON DELETE CASCADE",
+      "title": "TEXT NOT NULL",
+      "position": "INTEGER NOT NULL"
+    },
+    "notes": "Exactly 5 rows per board, seeded once when the board is created and never added to or removed (business rule: 'fixed columns that can be renamed'). id values are fixed and match the frontend's initialData ids (col-backlog, col-discovery, col-progress, col-review, col-done) so no id-translation layer is needed between frontend and DB. position (0-4) fixes display order."
+  },
+  "cards": {
+    "status": "proposed (Part 5, for Part 6)",
+    "columns": {
+      "id": "TEXT PRIMARY KEY",
+      "board_id": "INTEGER NOT NULL REFERENCES boards(id) ON DELETE CASCADE",
+      "column_id": "TEXT NOT NULL REFERENCES columns(id) ON DELETE CASCADE",
+      "title": "TEXT NOT NULL",
+      "details": "TEXT NOT NULL DEFAULT ''",
+      "position": "INTEGER NOT NULL"
+    },
+    "notes": "id is the frontend-generated card id (createId('card')), reused as-is. position is the card's index within its column's cardIds array; PUT /api/board re-derives it from array order on every write (delete+reinsert, per docs/PLAN.md Part 6). board_id is denormalized onto cards (in addition to being reachable via column_id) purely to make 'load all cards for board X' a single indexed lookup rather than a join, since every read is board-scoped."
+  }
+}

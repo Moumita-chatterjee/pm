@@ -137,14 +137,14 @@ logged out does not leak the board.
 
 ## Part 5: Database modeling
 
-**Status**: not started — blocked on user sign-off before Part 6 begins.
+**Status**: done — approved by user.
 
-- [ ] Propose SQLite schema (`users`, `sessions`, `boards`, `columns`,
+- [x] Propose SQLite schema (`users`, `sessions`, `boards`, `columns`,
       `cards`) mapping onto the frontend's `BoardData` shape, supporting
       multiple users with 1 board each.
-- [ ] Save the schema as `docs/db_schema.json`.
-- [ ] Document the approach in `docs/database.md`.
-- [ ] Get user sign-off before any Part 6 code is written against it.
+- [x] Save the schema as `docs/db_schema.json`.
+- [x] Document the approach in `docs/database.md`.
+- [x] Get user sign-off before any Part 6 code is written against it.
 
 **Tests**: N/A (design/doc part).
 
@@ -153,7 +153,9 @@ and `docs/database.md`.
 
 ## Part 6: Backend
 
-**Status**: not started.
+**Status**: done and verified (backend pytest, ruff, and a rebuilt Docker
+container smoke-tested via curl — including PUT validation and persistence
+across a container restart — all pass).
 
 - [ ] `backend/app/models.py`: Pydantic `CardOut`, `ColumnOut`, `BoardOut`
       mirroring the frontend types exactly.
