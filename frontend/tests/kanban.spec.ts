@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+// This suite exercises pure client-side board behavior against `next dev`
+// with no backend running, so the page-level auth check is stubbed out here.
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/me", (route) =>
+    route.fulfill({ status: 200, json: { username: "user" } })
+  );
+});
+
 test("loads the kanban board", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Kanban Studio" })).toBeVisible();

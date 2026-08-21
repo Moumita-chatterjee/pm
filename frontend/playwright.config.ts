@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
+  // Specs needing the real backend live in tests/docker and run via
+  // playwright.docker.config.ts instead (see that file).
+  testIgnore: "**/docker/**",
   timeout: 60_000,
   expect: {
     timeout: 10_000,
