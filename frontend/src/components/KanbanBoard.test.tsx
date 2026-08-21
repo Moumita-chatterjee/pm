@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { KanbanBoard } from "@/components/KanbanBoard";
@@ -15,6 +16,15 @@ const freshBoard: BoardData = {
 };
 
 const getFirstColumn = () => screen.getAllByTestId(/column-/i)[0];
+
+// KanbanBoard is a controlled component (board/setBoard lifted to page.tsx
+// in Part 10 so the chat sidebar can share state); this harness stands in
+// for that lifted state so the existing render/interaction assertions still
+// see the board update after each PUT round-trip.
+const KanbanBoardHarness = () => {
+  const [board, setBoard] = useState<BoardData>(freshBoard);
+  return <KanbanBoard board={board} setBoard={setBoard} />;
+};
 
 describe("KanbanBoard", () => {
   beforeEach(() => {
@@ -39,17 +49,13 @@ describe("KanbanBoard", () => {
     vi.unstubAllGlobals();
   });
 
-  it("loads the board from the backend and renders five columns", async () => {
-    render(<KanbanBoard />);
+  it("renders the five columns from the given board", async () => {
+    render(<KanbanBoardHarness />);
     expect(await screen.findAllByTestId(/column-/i)).toHaveLength(5);
-    expect(fetch).toHaveBeenCalledWith(
-      "/api/board",
-      expect.objectContaining({ credentials: "include" })
-    );
   });
 
   it("persists a column rename on blur via PUT /api/board", async () => {
-    render(<KanbanBoard />);
+    render(<KanbanBoardHarness />);
     await screen.findAllByTestId(/column-/i);
 
     const column = getFirstColumn();
@@ -69,7 +75,7 @@ describe("KanbanBoard", () => {
   });
 
   it("adds and removes a card, persisting each change via PUT", async () => {
-    render(<KanbanBoard />);
+    render(<KanbanBoardHarness />);
     await screen.findAllByTestId(/column-/i);
 
     const column = getFirstColumn();

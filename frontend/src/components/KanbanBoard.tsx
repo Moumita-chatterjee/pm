@@ -1,28 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   DndContext,
   DragOverlay,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import { ChatSidebar } from "@/components/ChatSidebar";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
 import { createId, moveCard, type BoardData } from "@/lib/kanban";
-import { getBoard, putBoard } from "@/lib/api";
+import { putBoard } from "@/lib/api";
 
-export const KanbanBoard = () => {
-  const [board, setBoard] = useState<BoardData | null>(null);
+type KanbanBoardProps = {
+  board: BoardData;
+  setBoard: (board: BoardData) => void;
+};
+
+// Cards are droppables nested inside their column's droppable, and the
+// sidebar now narrows the column area — closestCorners compares rect
+// corners and gets ambiguous once columns are this narrow, sometimes
+// resolving a drop to the neighboring column instead of the one the
+// pointer is actually over. pointerWithin checks whether the pointer is
+// literally inside a droppable's rect, which stays unambiguous regardless
+// of column width; rectIntersection is the fallback for the moment the
+// pointer briefly leaves every droppable (e.g. the gap between columns).
+const collisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
+};
+
+export const KanbanBoard = ({ board, setBoard }: KanbanBoardProps) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
-
-  useEffect(() => {
-    getBoard().then(setBoard);
-  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -110,10 +126,6 @@ export const KanbanBoard = () => {
     putBoard(next).then(setBoard);
   };
 
-  if (!board) {
-    return null;
-  }
-
   const activeCard = activeCardId ? board.cards[activeCardId] : null;
 
   return (
@@ -160,22 +172,25 @@ export const KanbanBoard = () => {
 
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <section className="grid gap-6 lg:grid-cols-5">
-            {board.columns.map((column) => (
-              <KanbanColumn
-                key={column.id}
-                column={column}
-                cards={column.cardIds.map((cardId) => board.cards[cardId])}
-                onRename={handleRenameColumn}
-                onAddCard={handleAddCard}
-                onDeleteCard={handleDeleteCard}
-              />
-            ))}
-          </section>
+          <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+            <section className="grid gap-6 lg:grid-cols-5">
+              {board.columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  column={column}
+                  cards={column.cardIds.map((cardId) => board.cards[cardId])}
+                  onRename={handleRenameColumn}
+                  onAddCard={handleAddCard}
+                  onDeleteCard={handleDeleteCard}
+                />
+              ))}
+            </section>
+            <ChatSidebar onBoardUpdate={setBoard} />
+          </div>
           <DragOverlay>
             {activeCard ? (
               <div className="w-[260px]">

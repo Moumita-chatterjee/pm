@@ -1,0 +1,77 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - button "Log out" [ref=e5]
+    - main [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - paragraph [ref=e11]: Single Board Kanban
+            - heading "Kanban Studio" [level=1] [ref=e12]
+            - paragraph [ref=e13]: Keep momentum visible. Rename columns, drag cards between stages, and capture quick notes without getting buried in settings.
+          - generic [ref=e14]:
+            - paragraph [ref=e15]: Focus
+            - paragraph [ref=e16]: One board. Five columns. Zero clutter.
+        - generic [ref=e17]:
+          - generic [ref=e18]: Backlog
+          - generic [ref=e20]: Discovery
+          - generic [ref=e22]: In Progress
+          - generic [ref=e24]: Review
+          - generic [ref=e26]: Done
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e32]:
+              - generic [ref=e35]: 2 cards
+              - textbox "Column title" [ref=e36]: Backlog
+            - generic [ref=e37]:
+              - button "Test working Delete Test" [ref=e38]:
+                - generic [ref=e39]:
+                  - generic [ref=e40]:
+                    - heading "Test" [level=4] [ref=e41]
+                    - paragraph [ref=e42]: working
+                  - button "Delete Test" [ref=e43]: Remove
+              - button "Drag test card No details yet. Delete Drag test card" [ref=e44]:
+                - generic [ref=e45]:
+                  - generic [ref=e46]:
+                    - heading "Drag test card" [level=4] [ref=e47]
+                    - paragraph [ref=e48]: No details yet.
+                  - button "Delete Drag test card" [ref=e49]: Remove
+            - button "Add a card" [ref=e51]
+          - generic [ref=e52]:
+            - generic [ref=e54]:
+              - generic [ref=e57]: 0 cards
+              - textbox "Column title" [ref=e58]: Discovery
+            - generic [ref=e60]: Drop a card here
+            - button "Add a card" [ref=e62]
+          - generic [ref=e63]:
+            - generic [ref=e65]:
+              - generic [ref=e68]: 0 cards
+              - textbox "Column title" [ref=e69]: In Progress
+            - generic [ref=e71]: Drop a card here
+            - button "Add a card" [ref=e73]
+          - generic [ref=e74]:
+            - generic [ref=e76]:
+              - generic [ref=e79]: 0 cards
+              - textbox "Column title" [ref=e80]: Review
+            - generic [ref=e82]: Drop a card here
+            - button "Add a card" [ref=e84]
+          - generic [ref=e85]:
+            - generic [ref=e87]:
+              - generic [ref=e90]: 0 cards
+              - textbox "Column title" [ref=e91]: Done
+            - generic [ref=e93]: Drop a card here
+            - button "Add a card" [ref=e95]
+        - complementary [ref=e96]:
+          - paragraph [ref=e97]: AI Assistant
+          - heading "Chat with your board" [level=2] [ref=e98]
+          - paragraph [ref=e100]: Ask me to create, edit, or move cards.
+          - generic [ref=e101]:
+            - textbox "Chat message" [ref=e102]:
+              - /placeholder: Ask the AI assistant...
+            - button "Send" [disabled] [ref=e103]
+      - status [ref=e104]
+```

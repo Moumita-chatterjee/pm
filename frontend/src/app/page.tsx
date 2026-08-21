@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { LoginForm } from "@/components/LoginForm";
-import { logout, me } from "@/lib/api";
+import { getBoard, logout, me } from "@/lib/api";
+import type { BoardData } from "@/lib/kanban";
 
 type AuthStatus = "loading" | "anon" | "authed";
 
 export default function Home() {
   const [status, setStatus] = useState<AuthStatus>("loading");
+  const [board, setBoard] = useState<BoardData | null>(null);
 
   useEffect(() => {
     me().then((response) => {
@@ -16,9 +18,16 @@ export default function Home() {
     });
   }, []);
 
+  useEffect(() => {
+    if (status === "authed") {
+      getBoard().then(setBoard);
+    }
+  }, [status]);
+
   const handleLogout = async () => {
     await logout();
     setStatus("anon");
+    setBoard(null);
   };
 
   if (status === "loading") {
@@ -40,7 +49,7 @@ export default function Home() {
           Log out
         </button>
       </div>
-      <KanbanBoard />
+      {board && <KanbanBoard board={board} setBoard={setBoard} />}
     </div>
   );
 }

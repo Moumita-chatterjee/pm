@@ -34,3 +34,20 @@ export const putBoard = async (board: BoardData): Promise<BoardData> => {
   });
   return response.json();
 };
+
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+
+export type ChatResponse = { reply: string; board: BoardData };
+
+export const chat = async (
+  message: string,
+  history: ChatMessage[]
+): Promise<ChatResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/chat`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, history }),
+  });
+  return response.json();
+};
