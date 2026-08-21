@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { Card, Column } from "@/lib/kanban";
@@ -21,6 +22,17 @@ export const KanbanColumn = ({
   onDeleteCard,
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  const [title, setTitle] = useState(column.title);
+  const [syncedTitle, setSyncedTitle] = useState(column.title);
+
+  // Reset local edit state when the column's title changes for a reason
+  // other than this input's own blur commit (e.g. the server round-trip
+  // it triggered, or a future external edit) — derived during render per
+  // https://react.dev/learn/you-might-not-need-an-effect, not in an effect.
+  if (column.title !== syncedTitle) {
+    setSyncedTitle(column.title);
+    setTitle(column.title);
+  }
 
   return (
     <section
@@ -40,8 +52,13 @@ export const KanbanColumn = ({
             </span>
           </div>
           <input
-            value={column.title}
-            onChange={(event) => onRename(column.id, event.target.value)}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            onBlur={() => {
+              if (title !== column.title) {
+                onRename(column.id, title);
+              }
+            }}
             className="mt-3 w-full bg-transparent font-display text-lg font-semibold text-[var(--navy-dark)] outline-none"
             aria-label="Column title"
           />

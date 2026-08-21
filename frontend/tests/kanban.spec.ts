@@ -1,11 +1,22 @@
 import { expect, test } from "@playwright/test";
+import { initialData } from "@/lib/kanban";
 
 // This suite exercises pure client-side board behavior against `next dev`
-// with no backend running, so the page-level auth check is stubbed out here.
+// with no backend running, so the API calls KanbanBoard makes are stubbed
+// out here (auth check + board load/save, backed by an in-memory fixture
+// that resets every test).
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/me", (route) =>
     route.fulfill({ status: 200, json: { username: "user" } })
   );
+
+  let board = structuredClone(initialData);
+  await page.route("**/api/board", (route) => {
+    if (route.request().method() === "PUT") {
+      board = route.request().postDataJSON();
+    }
+    return route.fulfill({ status: 200, json: board });
+  });
 });
 
 test("loads the kanban board", async ({ page }) => {

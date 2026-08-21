@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { API_BASE_URL } from "@/lib/api-base";
+import { login } from "@/lib/api";
 
 type LoginFormProps = {
   onSuccess: () => void;
@@ -19,12 +19,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await login(username, password);
 
       if (!response.ok) {
         setError("Invalid username or password");

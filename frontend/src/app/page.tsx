@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { LoginForm } from "@/components/LoginForm";
-import { API_BASE_URL } from "@/lib/api-base";
+import { logout, me } from "@/lib/api";
 
 type AuthStatus = "loading" | "anon" | "authed";
 
@@ -11,16 +11,13 @@ export default function Home() {
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/me`, { credentials: "include" }).then((response) => {
+    me().then((response) => {
       setStatus(response.ok ? "authed" : "anon");
     });
   }, []);
 
   const handleLogout = async () => {
-    await fetch(`${API_BASE_URL}/api/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    await logout();
     setStatus("anon");
   };
 

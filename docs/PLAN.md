@@ -178,15 +178,25 @@ HTTP, validated by tests; DB file is created automatically if missing.
 
 ## Part 7: Frontend + Backend
 
-**Status**: not started.
+**Status**: done and verified (frontend lint/unit/e2e, backend pytest, and
+the docker-config e2e suite — including a new board-persistence test — all
+pass against a rebuilt container).
 
-- [ ] `frontend/src/lib/api.ts`: fetch wrapper (`getBoard`, `putBoard`,
+- [x] `frontend/src/lib/api.ts`: fetch wrapper (`getBoard`, `putBoard`,
       `login`, `logout`, `me`), all `credentials: "include"`.
-- [ ] `KanbanBoard.tsx`'s four handlers (`handleRenameColumn`,
+- [x] `KanbanBoard.tsx`'s four handlers (`handleRenameColumn`,
       `handleAddCard`, `handleDeleteCard`, `handleDragEnd`) compute the next
-      `BoardData` locally (reusing `moveCard`, etc.), `await putBoard(...)`,
-      then set state from the server's echoed response — not an optimistic
-      client guess.
+      `BoardData` locally (reusing `moveCard`, etc.), apply it to state
+      immediately (optimistic), then `putBoard(...)` and reconcile state with
+      the server's response.
+      **Revised from the original non-optimistic design**: applying state
+      only after the `PUT` resolved caused a visible bug during drag —
+      dnd-kit resets its drag transform as soon as the drop completes, so
+      with `board` still unchanged the card visibly snapped back to its
+      original column for the round-trip duration, then jumped to its real
+      position once the response landed. Confirmed against the live app,
+      not just inferred. Setting state immediately removes the flash; the
+      later `.then(setBoard)` still makes the server response authoritative.
 
 **Tests**:
 - Frontend unit: mocked-fetch tests asserting each handler calls
@@ -200,14 +210,18 @@ reloads and server restarts (SQLite file), not just in-memory.
 
 ## Part 8: AI connectivity
 
-**Status**: not started — blocked on a real `OPENROUTER_API_KEY` in `.env`.
+**Status**: done and verified — a real `OPENROUTER_API_KEY` was added to
+root `.env` and the integration smoke test passes against the live
+OpenRouter API with `openai/gpt-oss-120b`.
 
-- [ ] `backend/app/ai/openrouter.py`: `call_openrouter(messages,
+- [x] `backend/app/ai/openrouter.py`: `call_openrouter(messages,
       response_format=None)` via `httpx`, POSTing to OpenRouter's chat
       completions endpoint with model `openai/gpt-oss-120b`.
-- [ ] `config.py`: `openrouter_api_key` setting, read from root `.env`.
-- [ ] Integration smoke test (network-gated, excluded from default test run):
-      ask "What is 2+2?", assert "4" appears in the reply.
+- [x] `config.py`: `openrouter_api_key` setting, read from root `.env`
+      (already in place from Part 2 scaffolding).
+- [x] Integration smoke test (network-gated, excluded from default test run
+      via `addopts = "-m 'not integration'"` in `pyproject.toml`): asks
+      "What is 2+2?", asserts "4" appears in the reply.
 
 **Tests**: `pytest -m integration` (not part of default `pytest` run) —
 requires a real key present.

@@ -18,7 +18,10 @@ describe("Home", () => {
   });
 
   it("renders the kanban board when authenticated", async () => {
-    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ columns: [], cards: {} }),
+    });
     render(<Home />);
 
     expect(await screen.findByRole("heading", { name: /kanban studio/i })).toBeInTheDocument();

@@ -174,3 +174,8 @@ cython_debug/
 
 .DS_Store
 
+# Project-specific: SQLite data volume mounted into the container by
+# scripts/start.ps1 / start.sh (docker run -v ./data:/app/data) — a runtime
+# artifact, never source.
+/data/
+
